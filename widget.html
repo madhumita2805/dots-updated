@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Widget UI</title>
+    <link rel="stylesheet" href="styles/custom.css" />
+    <link rel="stylesheet" href="styles/root.css" />
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/tour.min.css">
+    <style>
+      /* Hide scrollbar */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+      .dropdown {
+        position: relative;
+        display: inline-block;
+        margin-right: 10px; /* Add space between dropdowns */
+       
+      }
+
+      .dropdown-button {
+        padding: 4px 20px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: rgb(22, 22, 22);
+        border: none;
+        border-radius: 5px;
+      }
+
+      .dropdown-menu {
+        display: none;
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        position: absolute;
+        top: 100%; /* Ensures the menu drops down from the button */
+        left: 0;
+        background-color: rgb(232, 227, 227);
+        border: 1px solid #ddd;
+        min-width: 160px;
+        z-index: 1;
+      }
+
+      .dropdown-item {
+        padding: 10px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between; /* Ensures the icon is on the right */
+        align-items: center; /* Aligns the text and icon vertically */
+        position: relative;
+      }
+
+      .dropdown-item:hover {
+        background-color: #f1f1f1;
+      }
+
+      .dropdown-icon {
+        margin-left: 10px; /* Adds space between the item text and the icon */
+        font-size: 12px; /* Adjusts the size of the icon */
+      }
+
+      .submenu {
+    display: none;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    position: absolute; /* Ensures the submenu is positioned relative to the parent item */
+    top: 100%; /* Positions it directly below the parent item */
+    left: 0;
+    background-color: white;
+    border: 1px solid #fdcf01;
+    min-width: 360px;
+    z-index: 2;
+    border-radius: 8px;
+    max-height: 200px; /* Set a max height to enable scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+    
+}
+.submenu li {
+    padding: 10px; /* Add padding for better spacing */
+    cursor: pointer; /* Change cursor to pointer */
+}
+
+.submenu li:hover {
+    background-color: #fdcf01; /* Change background color on hover */
+    color: rgb(4, 4, 4); /* Optionally change text color */
+}
+
+/* Custom scrollbar styling */
+.submenu::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+
+.submenu::-webkit-scrollbar-thumb {
+    background-color: #fdcf01; /* Scrollbar thumb color */
+    border-radius: 4px; /* Rounded corners for the scrollbar thumb */
+}
+
+.submenu::-webkit-scrollbar-thumb:hover {
+    background-color: #e6b801; /* Darker yellow for hover effect */
+}
+
+/* Change the cursor to 'pointer' when hovering over the submenu */
+.submenu:hover {
+    cursor: pointer;
+}
+
+
+      .dropdown-item.active .submenu {
+        display: block;
+      }
+
+      .dropdown-menu.active {
+        display: block;
+      }
+
+      
+      .toggle-btn {
+       display: none;
+      margin-top: 10%;
+       }
+                        
+     .toggle-label {
+       display: inline-block;
+       width: 40px;
+       height: 20px;
+      background-color: white;
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+      transition: background-color 0.3s;
+       }
+                        
+       .toggle-label::after {
+         content: '';
+        position: absolute;
+        width: 18px;
+         height: 18px;
+        background-color: #ccc;
+         border-radius: 50%;
+         top: 1px;
+        left: 1px;
+         transition: transform 0.3s;
+         }
+                        
+        .toggle-btn:checked + .toggle-label {
+          background-color: #FFDD00;
+         }
+                        
+       .toggle-btn:checked + .toggle-label::after {
+          transform: translateX(20px);
+         background-color: #fff;
+          }
+                              
+
+
+    </style>
+  </head>
+  <body class="h-screen w-full">
+       <!-- Taskbar -->
+        <div class="taskbar-slide h-16 flex items-center w-full absolute">
+        
+            <div class="flex justify-center ml-10 w-full relative h-full" id="toolbar">
+              
+              <div class="bg absolute w-full  bottom-0">
+                <img id="shelf" class="w-full" src="images/shelf.png" alt="">
+              </div>
+            </div>
+            <div class="flex items-center gap-8 w-48 justify-end pr-5">
+                <i id="search-icon" class="ri-search-line "></i>
+                <i id="notification-icon" class="ri-notification-3-line "></i>
+                <i id="pinned" class="ri-pushpin-line"></i>
+                <i onclick="startGuide()" class="ri-question-line cursor-pointer"></i>
+            </div>
+          
+        </div>
+    <main class="flex w-full h-full cm lightapp">
+      <!-- Sidebar -->
+      <aside class="h-full relative">
+        <input type="checkbox" class="hidden" id="sidebar-toggle" />
+        <label
+          for="sidebar-toggle"
+          class="absolute lg:hidden top-6 -right-8 px-1"
+        >
+           <i class="ri-bar-chart-horizontal-line"></i>
+        </label>
+        <div class="h-full sidebar">
+           <div class="sidebar-container">
+          <div class="p-6">
+              <a href="index.html">
+                <img class="w-20" src="/images/logo.png" alt="Dots Logo" />
+          </div>
+          <div class="sidebar-content">
+            <ul class="space-y-1">
+              <li class="all-tab">
+                <a
+                  class="w-full px-6 py-3 rounded-r-lg block flex justify-between items-center"
+                  href="#"
+                >
+                  <span id="All" class="text-base font-normal">Widgets</span>
+                </a>
+              </li>
+           
+            </ul>
+          </div>
+        </div>
+        </div>
+       
+      </aside>
+
+      <!-- Main content -->
+      <div class="right-container flex-grow border h-100 main">
+        <div class="flex w-full h-full flex-col content">
+          <div class="px-9 py-4 lg:p-4">
+            <div class="flex items-center gap-4">
+             
+              <span class="text-xl font-normal mb-2 text-c-black">Widgets</span>
+            </div>
+          </div>
+
+          <!-- top taskbar -->
+          <div class="taskbar flex items-center justify-between px-3 sm:px-6 py-3">
+            <div class="flex items-center gap-4 w-full md:w-1/2">
+              <div class="flex gap-2 items-center">
+                <span class="font-medium text-c-black">Widgets</span>
+              </div>
+            </div>
+
+            
+            
+          </div>
+         
+          <div class="mt-40 ">
+            <h2 class="text-2xl font-semibold text-black  ml-96">You currently have no widgets.</h2>
+            <p class="text-slate-800  text-lg mt-4 ml-56">
+              Begin the process by designing and constructing the first widget, ensuring all specifications<br> 
+             <span class="ml-6"> are met and functionality is tested thoroughly before proceeding to the next stage.</span>
+            </p>
+        
+            <!-- Button Section -->
+             
+      
+          
+            <div class="delete1-modal flex flex-col items-center justify-center min-h-screen bg-gray-100 ml-96 mt-10">
+              <div class="p-6 rounded-lg w-44 text-center">
+                  <button id="createWidgetBtn" class="bg-c-yellow text-black rounded-full px-6 py-2 text-2xl">+</button>
+                  <h1 class="text-lg font-medium mt-4">Create Widget</h1>
+              </div>
+          </div>
+           
+            <div id="widgetModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center">
+              <div class="bg-white rounded-lg shadow-xl w-11/12 max-w-lg">
+                  <!-- Modal Header -->
+                  <div class="flex justify-between items-center border-b border-b border-gray-300 px-4 py-2">
+                      <h3 class="text-lg font-medium">Create New Widget</h3>
+                      <button id="closeModalBtn" class="text-slate-800 hover:text-gray-700">
+                          <i class="ri-close-circle-fill text-2xl"></i>
+                      </button>
+                  </div>
+      
+                  <!-- Modal Body -->
+                  <div class="p-4">
+                      <form id="widgetForm">
+                        <div class="flex items-center mb-4">
+                          <!-- Yellow Round Box for 1 -->
+                          <span class="bg-yellow-300 text-black font-bold rounded-full h-8 w-8 flex items-center justify-center ml-24">1</span>
+                          <span class="ml-2 font-semibold text-black">Widget information</span>
+                          
+                          <!-- Small Dash -->
+                          <span class="mx-6 border-t border-gray-400 w-16"></span>
+                          
+                          <!-- Grey Round Box for 2 -->
+                          <span class="bg-gray-300 text-black font-bold rounded-full h-8 w-8 flex items-center justify-center">2</span>
+                          <span class="ml-2 font-semibold text-black">Filters</span>
+                      </div>
+      
+                          
+                          
+                        
+      
+                          <!-- Open Type -->
+                          <div id="form1" class="mb-4">
+                            <!-- First Form -->
+                            <div class="flex items-center">
+                              <label for="openType" class="text-sm font-medium mr-4 w-1/4">Widget Type<span class="text-red-500">*</span></label>
+                              <div class="dropdown w-full">
+                                <button class="dropdown-button1 bg-gray-100 text-gray-700 border border-gray-400 rounded h-8 w-full text-left px-3">Please choose widget type</button>
+                                <ul class="dropdown-menu w-full">
+                                  <li class="dropdown-item">
+                                    Utility Widgets
+                                    <span class="dropdown-icon">▼</span>
+                                    <ul class="submenu">
+                                      <li>Sticky Notes</li>
+                                      <li>Weather Updates</li>
+                                      <li>Task List</li>
+                                      <li>World Clock</li>
+                                      <li>Quick Links</li>
+                                      <li>Notification Center</li>
+                                      <li>Calendar Events</li>
+                                      <li>Timer/Stopwatch</li>
+                                      <li>Clipboard Manager</li>
+                                    </ul>
+                                  </li>
+                                  <li class="dropdown-item">Admin & Reporting</li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div id="error-message" class="text-green-500 text-sm mt-2 hidden">Please choose widget type.</div>
+                            <div class="flex justify-end space-x-2 mt-4">
+                              <button 
+                                type="button" 
+                                id="previewBtn" 
+                                class="bg-black text-white px-7 py-2 rounded-full focus:outline-none">
+                                Next
+                              </button>
+                              <button 
+                                type="submit" 
+                                id="saveBtn" 
+                                class="bg-yellow-300 text-black px-6 py-2 rounded-full focus:outline-none">
+                                Create
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div id="form2" class="hidden">
+                            <form>
+                              <div class="mb-4 flex items-center">
+                                <label for="widget-type" class="block text-sm font-medium text-black w-1/4">Widget Type <span class="text-red-500">*</span></label>
+                                <select id="widget-type" name="widget-type" class="mt-1 block w-3/4 pl-3 pr-10 py-1 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg">
+                                  <option value="utility-widgets">Utility Widgets</option>
+                                  <option value="analytics-widgets">Analytics Widgets</option>
+                                </select>
+                              </div>
+                              
+                              <div class="mb-4 flex items-center">
+                                <label for="widget-title" class="block text-sm font-medium text-black w-1/4">Widget Title <span class="text-red-500">*</span></label>
+                                <input type="text" id="widget-title" name="widget-title" placeholder="Enter Widget Title" class="mt-1 block w-3/4  pl-3 pr-10 py-1 shadow-sm sm:text-sm border border-gray-300 rounded-lg">
+                              </div>
+                              
+                              <div class="mb-4 flex items-center">
+                                <label for="page-size" class="block text-sm font-medium text- text-black w-1/4">Page Size <span class="text-red-500">*</span></label>
+                                <input type="number" id="page-size" name="page-size" value="10" class="mt-1 block w-3/4  pl-3 pr-10 py-1 shadow-sm sm:text-sm border border-gray-300 rounded-lg">
+                              </div>
+                            
+                              <div class="mb-4 flex items-center">
+                                <label for="application" class="block text-sm font-medium text-black w-1/4">Application <span class="text-red-500">*</span></label>
+                                <select id="application" name="application" class="mt-1 block w-3/4 pl-3 pr-10 py-1 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg">
+                                  <option value="" disabled selected>Choose application</option>
+                                  <option value="app1">App 1</option>
+                                  <option value="app2">App 2</option>
+                                </select>
+                              </div>
+                            
+                              <div class="mb-4 flex items-center">
+                                <label for="group-by" class="block text-sm font-medium text-black w-1/4">Group By <span class="text-red-500">*</span></label>
+                                <select id="group-by" name="group-by" class="mt-1 block w-3/4 pl-3 pr-10 py-1 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg">
+                                  <option value="none">None</option>
+                                  <option value="category">Category</option>
+                                </select>
+                              </div>
+                            
+                              <div class="mb-4 flex items-center">
+                                <label for="flatten-tasks" class="block text-sm font-medium text-gray-700 w-1/4">Flatten Tasks</label>
+                                <div class="w-3/4 flex items-center">
+                                  <input type="checkbox" id="flatten-tasks" name="flatten-tasks" class="toggle-btn" />
+                                  <label for="flatten-tasks" class="toggle-label"></label>
+                                </div>
+                              </div>
+                             
+
+
+                            
+                              <div class="flex justify-end space-x-2">
+
+                                <button 
+                                 type="button" 
+                                 id="cancelBtn" 
+                                 class="bg-gray-300 hover:bg-gray-400 text-black px-6 py-2 rounded-full focus:outline-none ml-[-2]">
+                                   Cancel
+                                </button>
+                                <button 
+                                type="button" 
+                                id="previewBtn" 
+                                class="bg-black text-white px-7 py-2 rounded-full focus:outline-none">
+                                Next
+                              </button>
+                              <button 
+                                type="submit" 
+                                id="saveBtn" 
+                                class="bg-yellow-300 text-black px-6 py-2 rounded-full focus:outline-none">
+                                Create
+                              </button>
+
+                             
+                              
+                              
+                              </div>
+                            </form>
+                          </div>
+                          
+
+                          
+                  
+                  
+
+                  
+              </div>
+          </div>
+
+          <!-- Delete Modal -->
+          <div
+            id="Delete-modal"
+            tabindex="-1"
+            class="fixed hidden inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          >
+            <div class="delete-modal relative">
+              <div class="relative">
+                <div id="deleteapp-modal" class="p-4 md:p-5 text-center">
+                  <div class="delete-header flex items-center gap-4 mb-1 py-1">
+                    <i class="ri-delete-bin-6-line ri-xl text-c-yellow"></i>
+                    <h1 class="text-lg font-medium">Delete File</h1>
+                  </div>
+                  <hr text-md>
+                  <div class="mt-6 flex items-center justify-center">
+                    <h1 class="text-md font-medium text-c-black">
+                      Are you sure you want to delete the selection?
+                    </h1>
+                  </div>
+                  <div class="flex items-center justify-center gap-3 mt-9">
+                    <button
+                      class="bg-c-black text-white rounded-full px-12 sm:px-14 py-2"
+                      type="submit"
+                    >
+                      OK
+                    </button>
+                    <button
+                      class="cancel-btn bg-white text-c-yellow px-9 sm:px-12 py-2 rounded-full border border-c-yellow"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- content -->
+          <div class="lightapp-content relative h-full overflow-y-auto">
+           
+          </div>
+          
+        </div>
+      </div>
+
+      
+     
+
+
+      <!--Create Button Modal -->
+   
+
+   
+   
+     </main> 
+
+    
+
+
+    <script src="script/taskbar.js"></script>
+    <script src="script/tour.js"></script>
+    <script src="script/lightapp-tour.js"></script>
+
+
+    <script>
+      // // Handle class="1234" click event
+      // document.querySelectorAll('.1234').forEach(item => {
+      //   item.addEventListener('click', event => {
+      //     alert('Utility Widget selected: ' + item.textContent);
+      //   });
+      // });
+      // Create Modal Toggle
+      const createWidgetBtn = document.getElementById('createWidgetBtn');
+      const widgetModal = document.getElementById('widgetModal');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+
+      createWidgetBtn.addEventListener('click', () => {
+          widgetModal.classList.remove('hidden');
+          widgetModal.classList.add('flex');
+      });
+
+      closeModalBtn.addEventListener('click', () => {
+          widgetModal.classList.add('hidden');
+          widgetModal.classList.remove('flex');
+      });
+
+      // Form Submit
+      const widgetForm = document.getElementById('widgetForm');
+      widgetForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          alert('Widget saved successfully!');
+          widgetModal.classList.add('hidden');
+          widgetModal.classList.remove('flex');
+          if (document.getElementById('widget-title').value) {
+            window.location.href = 'new-design.html';
+          }
+      });
+
+      // Dropdown functionality
+      const dropdownButtons = document.querySelectorAll('.dropdown-button1');
+      const dropdownMenus = document.querySelectorAll('.dropdown-menu');
+      const dropdownItems = document.querySelectorAll('.dropdown-item');
+
+      dropdownButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+          event.stopPropagation();
+          const menu = this.nextElementSibling;
+          
+          // Hide all dropdowns before opening the clicked one
+          dropdownMenus.forEach(m => {
+            if (m !== menu) {
+              m.classList.remove('active');
+            }
+          });
+
+          // Toggle the clicked dropdown menu
+          menu.classList.toggle('active');
+        });
+      });
+
+      dropdownItems.forEach(item => {
+        item.addEventListener('click', function (event) {
+          event.stopPropagation();
+          const submenu = this.querySelector('.submenu');
+          
+          // Close all other submenus
+          document.querySelectorAll('.submenu').forEach(sub => {
+            if (sub !== submenu) {
+              sub.style.display = 'none';
+            }
+          });
+          
+          // Toggle the clicked submenu
+          submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Update button text with selected option
+        item.querySelectorAll('.submenu li').forEach(subItem => {
+          subItem.addEventListener('click', function () {
+            const button = item.closest('.dropdown').querySelector('.dropdown-button1');
+            button.textContent = this.textContent;
+            // Set the selected option's name as the title in the form2 widget title box
+            document.getElementById('widget-title').value = this.textContent;
+          });
+        });
+      });
+
+      // Close all dropdowns if clicked outside
+      document.addEventListener('click', function () {
+        dropdownMenus.forEach(menu => {
+          menu.classList.remove('active');
+        });
+
+        // Close all submenus when clicking outside
+        document.querySelectorAll('.submenu').forEach(submenu => {
+          submenu.style.display = 'none';
+        });
+      });
+
+      document.getElementById("previewBtn").addEventListener("click", function () {
+        const openType = document.getElementById("openType");
+        const errorMessage = document.getElementById("error-message");
+        const selectedWidget = document.querySelector('.dropdown-button1').textContent;
+        if (selectedWidget === "Please choose widget type") {
+          errorMessage.classList.remove("hidden");
+          return;
+        }
+        errorMessage.classList.add("hidden");
+        // Hide the first form
+        document.getElementById("form1").classList.add("hidden");
+        // Show the second form
+        document.getElementById("form2").classList.remove("hidden");
+      });
+
+      // Show delete modal on cancel button click
+      const cancelBtn = document.getElementById('cancelBtn');
+      const deleteModal = document.getElementById('Delete-modal');
+
+      cancelBtn.addEventListener('click', () => {
+        deleteModal.classList.remove('hidden');
+      });
+
+      // Close delete modal on cancel button click inside modal
+      document.querySelector('.cancel-btn').addEventListener('click', () => {
+        deleteModal.classList.add('hidden');
+      });
+
+  </script>
+  </body>
+</html>
